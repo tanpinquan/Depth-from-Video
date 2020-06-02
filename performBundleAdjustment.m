@@ -55,7 +55,7 @@ for row = 0:param.H-1
     end    
     
     x = [col+1; row+1;1];
-    unary(:,pixel) = computeBundleAdjustDataTerm2(x, mat1, mat2, disparityInit, refImgIndex, img, imgRGB,param);
+    unary(:,pixel) = computeBundleAdjustDataTerm(x, mat1, mat2, disparityInit, refImgIndex, img, imgRGB,param);
     [val index] = min(unary(:,pixel));    
     segclass(pixel) = index-1;
     
@@ -63,8 +63,8 @@ for row = 0:param.H-1
 end
 priorProb = reshape(segclass,[param.W,param.H]);
 priorProb = priorProb';
-figure(200+refImgIndex);subplot(1,3,1); imshow(rescale(disparityInit{refImgIndex}));
-figure(200+refImgIndex);subplot(1,3,2); imshow(rescale(priorProb));
+figure(200+refImgIndex);subplot(1,3,1); imshow(rescale(disparityInit{refImgIndex})); title('Disparity init')
+figure(200+refImgIndex);subplot(1,3,2); imshow(rescale(priorProb)); title('Bundle adjust data term')
 
 % figure(210+refImgIndex);surf(flipud(priorProb),'EdgeColor','None');
 % colormap('gray');
@@ -86,7 +86,7 @@ fprintf(']\n')
 
 disparityLabels = (reshape(labels,[param.W,param.H]));
 disparityLabels = disparityLabels';
-figure(200+refImgIndex); subplot(1,3,3); imshow(rescale(disparityLabels));
+figure(200+refImgIndex); subplot(1,3,3); imshow(rescale(disparityLabels)); title('Bundle Adjust')
 % figure(210+refImgIndex+1);surf(flipud(disparityLabels),'EdgeColor','None');
 colormap('gray');
 view(2);

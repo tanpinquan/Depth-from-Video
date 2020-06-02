@@ -55,7 +55,7 @@ for row = 0:param.H-1
     end    
     
     x = [col+1; row+1;1];
-    unary(:,pixel) = computeVideoDepthDataTerm2(x, mat1, mat2, refImgIndex, img, imgRGB,param);
+    unary(:,pixel) = computeVideoDepthDataTerm(x, mat1, mat2, refImgIndex, img, imgRGB,param);
     [val index] = min(unary(:,pixel));    
     segclass(pixel) = index-1;
     
@@ -63,7 +63,7 @@ for row = 0:param.H-1
 end
 priorProb = reshape(segclass,[param.W,param.H]);
 priorProb = priorProb';
-figure(100 + refImgIndex);subplot(1,2,1); imshow(rescale(priorProb));
+figure(100 + refImgIndex);subplot(1,2,1); imshow(rescale(priorProb)); title('Data Term')
 
 
 pairwise2 = sparse(index_i, index_j, weights);
@@ -82,4 +82,4 @@ fprintf(']\n')
 
 disparityLabels = (reshape(labels,[param.W,param.H]));
 disparityLabels = disparityLabels';
-figure(100 + refImgIndex); subplot(1,2,2); imshow(rescale(disparityLabels));
+figure(100 + refImgIndex); subplot(1,2,2); imshow(rescale(disparityLabels)); title('Disparity Init')

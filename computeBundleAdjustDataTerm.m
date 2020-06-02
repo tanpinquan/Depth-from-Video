@@ -1,26 +1,29 @@
 function [dataTerms] = computeBundleAdjustDataTerm(testLoc, mat1, mat2, disparityInit, refImgIndex, img, imgRGB, param)
-% dataTerms = cell(1,nImages);
-% diffTerms = cell(1,nImages);
-% diffTerms = inf(nLabels,nImages);
-diffTerms = nan(param.nLabels,param.nImages);
-distTerms = nan(param.nLabels,param.nImages);
 
-x = cell(param.nImages,param.nImages);
-xBack = cell(param.nImages,param.nImages);
+
+startImage = max(1,refImgIndex - param.imageWindowSize);
+endImage = min(param.nImages, refImgIndex + param.imageWindowSize);
+
+nImages = 2*param.imageWindowSize+1;
+diffTerms = nan(param.nLabels,nImages);
+distTerms = nan(param.nLabels,nImages);
+
+x = cell(1,nImages);
+xBack = cell(1,nImages);
 
 i = refImgIndex;
-for j = 1:param.nImages
+for j = startImage:endImage
     if(i~=j)
         
-        x{i,j} = mat1{i,j}*testLoc + param.d.*mat2{i,j};
-        x{i,j} = round(x{i,j}./x{i,j}(3,:));
-        validPoints = x{i,j}(1,:)>0 & x{i,j}(1,:)<=param.W & x{i,j}(2,:)>0 & x{i,j}(2,:)<=param.H;
-        x{i,j} = x{i,j}(:,validPoints);
+        x{j} = mat1{i,j}*testLoc + param.d.*mat2{i,j};
+        x{j} = round(x{j}./x{j}(3,:));
+        validPoints = x{j}(1,:)>0 & x{j}(1,:)<=param.W & x{j}(2,:)>0 & x{j}(2,:)<=param.H;
+        x{j} = x{j}(:,validPoints);
 
         %% Photometric
         testPixel = permute(img{i}(testLoc(2),testLoc(1),:),[3 2 1]);
 
-        idx = sub2ind([param.H param.W], x{i,j}(2,:), x{i,j}(1,:));
+        idx = sub2ind([param.H param.W], x{j}(2,:), x{j}(1,:));
         pixelLine = [imgRGB.r{j}(idx); imgRGB.g{j}(idx); imgRGB.b{j}(idx)];
 
         colourDiff = (sum(abs(pixelLine - testPixel),1)/3)';
@@ -29,19 +32,19 @@ for j = 1:param.nImages
         %% Geometric
         disparityInd = disparityInit{j}(idx)+1;
         
-        xBack{i,j} = mat1{j,i}*x{i,j} + param.d(disparityInd).*mat2{j,i};
-        xBack{i,j} = xBack{i,j}./xBack{i,j}(3,:);
+        xBack{j} = mat1{j,i}*x{j} + param.d(disparityInd).*mat2{j,i};
+        xBack{j} = xBack{j}./xBack{j}(3,:);
 
-        distDiff = sum((xBack{i,j} - testLoc).^2);
+        distDiff = sum((xBack{j} - testLoc).^2);
         
         %% Store terms
         nValidTerms = length(colourDiff);
         if(nValidTerms>= param.nLabels)
-            diffTerms(1:param.nLabels,j) = colourDiff(1:param.nLabels);
-            distTerms(1:param.nLabels,j) = distDiff(1:param.nLabels);
+            diffTerms(1:param.nLabels,j-startImage+1) = colourDiff(1:param.nLabels);
+            distTerms(1:param.nLabels,j-startImage+1) = distDiff(1:param.nLabels);
         else
-            diffTerms(1:length(colourDiff),j) = colourDiff;
-            distTerms(1:length(colourDiff),j) = distDiff;
+            diffTerms(1:length(colourDiff),j-startImage+1) = colourDiff;
+            distTerms(1:length(colourDiff),j-startImage+1) = distDiff;
         end
         
 %         figure();

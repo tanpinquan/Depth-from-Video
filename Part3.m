@@ -38,8 +38,7 @@ Rprime = [0.9998813487	0.0148994942	0.0039106989
 
 Tprime = [-9.9909793759	0.2451742154	0.1650832670];
 
-%% Swap K, R and T
-% img1 = double(img1);
+%% Swap K, R and T (Uncomment to swap)
 imgTemp = img2;
 
 img2 = img1;
@@ -69,6 +68,8 @@ R = [0.9998813487	0.0148994942	0.0039106989
 
 T = [-9.9909793759	0.2451742154	0.1650832670];
 
+
+%%
 nLabels = 100;
 
 [X Y] = meshgrid(1:nLabels, 1:nLabels);
@@ -81,8 +82,7 @@ d = d(1:nLabels);
 mat1 = Kprime*(Rprime')*(R)*inv(K)
 mat2 = Kprime*(Rprime')*(T'-Tprime')
 
-% lambda2= 0.2;
-% labelcost2 = min(9, (X - Y).*(X - Y));
+
 lambda = 2e7;
 labelcost = min(9*0.0001^2, (d-d').*(d-d'));
 
@@ -97,7 +97,7 @@ validPoints = testPointPrime(1,:)>1 & testPointPrime(1,:)<W & testPointPrime(2,:
 
 validTestPointPrime = testPointPrime(:,validPoints);
 validTestPointPrimeRounded = round(validTestPointPrime);
-% testPointPrime(validPoints,:);
+
 figure; 
 subplot(1,2,1);
 imshow(uint8([img1]));
@@ -161,12 +161,6 @@ for row = 0:H-1
     
     x = [col+1; row+1;1];
     unary(:,pixel) = computeUnrectifiedDepthDataTerm(x, d, mat1, mat2, img1, img2RGB, W, H, nLabels, 'norm', 10);
-%     unary(:,pixel) = computeDepthDataTerm(img1(row+1,col+1,:),  img2(row+1,:,:), col, nLabels);
-    
-%     priorCost = unary(:,pixel)+lambda*labelcost(:,1);
-%     index = round(mean(find(priorCost == min(priorCost))));
-    
-%     [val index] = min(unary(:,pixel)+lambda*labelcost(:,1));
     
     [val index] = min(unary(:,pixel));    
     segclass(pixel) = index-1;
@@ -176,7 +170,7 @@ end
 
 priorProb = reshape(segclass,[W,H]);
 priorProb = priorProb';
-figure(2);subplot(1,2,1); imshow(rescale(priorProb));
+figure(2);subplot(1,2,1); imshow(rescale(priorProb)); title('data term')
 title('Data term')
 
 
@@ -184,11 +178,11 @@ pairwise2 = sparse(index_i, index_j, weights);
 
 dataTerm = unary';
 
-disp(['graphcuts start' datestr(now, 'dd/mm/yy-HH:MM')])
+disp(['graphcuts start: ' datestr(now, 'dd/mm/yy-HH:MM')])
 
 [labels E Eafter] = GCMex(segclass, single(unary), pairwise2, single(labelcost),0);
 
-disp(['graphcuts end' datestr(now, 'dd/mm/yy-HH:MM')])
+disp(['graphcuts end: ' datestr(now, 'dd/mm/yy-HH:MM')])
 
 fprintf('E: %d (should be 260), Eafter: %d (should be 44)\n', E, Eafter);
 fprintf('unique(labels) should be [0 4] and is: [');
@@ -197,7 +191,7 @@ fprintf(']\n')
 
 imageLabels = (reshape(labels,[W,H]));
 imageLabels = imageLabels';
-figure(2); subplot(1,2,2); imshow(rescale(imageLabels));
+figure(2); subplot(1,2,2); imshow(rescale(imageLabels));title('Depth map')
 title('Depth term')
 
 
