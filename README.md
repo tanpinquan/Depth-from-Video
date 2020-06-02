@@ -8,5 +8,5 @@ Part3.m extracts depth from stereo using unrectified images
 
 Part4.m extracts depth from video frames
 
-![Screenshot](test0110.png)
+![Screenshot](test0110.jpg)
 ![Screenshot](depth0110.png)
